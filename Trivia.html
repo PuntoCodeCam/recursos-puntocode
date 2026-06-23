@@ -1,0 +1,101 @@
+-- Script: Trivia — Banco de preguntas aleatorio
+
+local frame = script.Parent
+local pregunta = frame:WaitForChild("Pregunta")
+local opcionA = frame:WaitForChild("OpcionA")
+local opcionB = frame:WaitForChild("OpcionB")
+local opcionC = frame:WaitForChild("OpcionC")
+local resultado = frame:WaitForChild("Resultado")
+
+-- =============================================
+-- BANCO DE PREGUNTAS
+-- Cada entrada tiene: texto, tres opciones y cuál es la correcta (A, B o C)
+-- =============================================
+local preguntas = {
+	{
+		texto = "¿Cuánto es 7 x 8?",
+		a = "54", b = "56", c = "64",
+		correcta = "B"
+	},
+	{
+		texto = "¿Cuántos lados tiene un triángulo?",
+		a = "2", b = "4", c = "3",
+		correcta = "C"
+	},
+	{
+		texto = "¿Cuántos planetas tiene el sistema solar?",
+		a = "7", b = "15", c = "8",
+		correcta = "C"
+	},
+	{
+		texto = "¿Cuánto es 100 dividido entre 4?",
+		a = "25", b = "20", c = "30",
+		correcta = "A"
+	},
+	{
+		texto = "¿Cuál animal es el más rápido del mundo?",
+		a = "León", b = "Guepardo", c = "Águila",
+		correcta = "B"
+	},
+}
+
+-- Variable para rastrear qué opción es la correcta en la pregunta activa
+local respuestaCorrecta = nil
+
+-- =============================================
+-- FUNCIÓN: Cargar una pregunta aleatoria del banco
+-- =============================================
+local function cargarPregunta()
+	-- Escoge un índice al azar
+	local i = math.random(1, #preguntas)
+	local p = preguntas[i]
+
+	-- Actualizar los textos de la GUI
+	pregunta.Text = p.texto
+	opcionA.Text = p.a
+	opcionB.Text = p.b
+	opcionC.Text = p.c
+	resultado.Text = ""
+
+	-- Guardar referencia al botón correcto según la letra
+	if p.correcta == "A" then
+		respuestaCorrecta = opcionA
+	elseif p.correcta == "B" then
+		respuestaCorrecta = opcionB
+	else
+		respuestaCorrecta = opcionC
+	end
+end
+
+-- =============================================
+-- FUNCIÓN: Verificar respuesta
+-- =============================================
+local function mostrarResultado(botonPresionado)
+	if botonPresionado == respuestaCorrecta then
+		resultado.Text = "¡Correcto! ✅"
+		resultado.TextColor3 = Color3.fromRGB(0, 200, 0)
+	else
+		resultado.Text = "Incorrecto ❌ La respuesta era " .. respuestaCorrecta.Text
+		resultado.TextColor3 = Color3.fromRGB(220, 0, 0)
+	end
+
+	-- Esperar 2 segundos y cargar la siguiente pregunta
+	task.wait(2)
+	cargarPregunta()
+end
+
+-- =============================================
+-- CONECTAR BOTONES
+-- =============================================
+opcionA.MouseButton1Click:Connect(function()
+	mostrarResultado(opcionA)
+end)
+opcionB.MouseButton1Click:Connect(function()
+	mostrarResultado(opcionB)
+end)
+opcionC.MouseButton1Click:Connect(function()
+	mostrarResultado(opcionC)
+end)
+
+-- Iniciar con la primera pregunta aleatoria
+cargarPregunta()
