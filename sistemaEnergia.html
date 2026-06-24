@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Código – Sistema de Energía </title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: sans-serif;
+      background: #1a1b2e;
+      padding: 16px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .label {
+      font-size: 12px;
+      color: #a9b1d6;
+      letter-spacing: 0.05em;
+    }
+
+    .copy-btn {
+      background: #7aa2f7;
+      color: #1a1b2e;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .copy-btn:hover { background: #89b4fa; }
+    .copy-btn.copied { background: #9ece6a; }
+
+    pre {
+      border-radius: 8px;
+      margin: 0;
+      overflow-x: auto;
+    }
+
+    pre code {
+      font-size: 13px;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <span class="label">Lua · Roblox Studio</span>
+    <button class="copy-btn" onclick="copiarCodigo()">📋 Copiar código</button>
+  </div>
+
+  <pre><code class="language-lua" id="codigo">
+-- Script: StaminaSystem
+-- Ubicación: StarterGui > ScreenGui > LocalScript
+-- Requiere en la GUI:
+--   ScreenGui > Frame (fondo, llamado "FondoStamina") > Frame (barra verde, llamado "BarraStamina")
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+local gui = player.PlayerGui:WaitForChild("ScreenGui")
+local barraStamina = gui:WaitForChild("FondoStamina"):WaitForChild("BarraStamina")
+
+-- =============================================
+-- CONFIGURACIÓN DE STAMINA
+-- =============================================
+local staminaMaxima = 100
+local staminaActual = 100
+local velocidadBajada = 15       -- Stamina que se pierde por segundo al correr normal
+local velocidadSubida = 10       -- Stamina que se recupera por segundo al estar quieto
+local velocidadSubidaLenta = 4   -- Stamina que se recupera por segundo al caminar agotado
+local umbralMovimiento = 1
+
+local velocidadNormal = 16
+local velocidadAgotado = 8
+
+local estaAgotado = false
+
+-- =============================================
+-- LOOP PRINCIPAL
+-- =============================================
+RunService.Heartbeat:Connect(function(deltaTime)
+	local velocidad = humanoidRootPart.AssemblyLinearVelocity.Magnitude
+
+	if velocidad > umbralMovimiento then
+		if not estaAgotado then
+			-- Corriendo con stamina: baja normal
+			staminaActual = staminaActual - (velocidadBajada * deltaTime)
+		else
+			-- Caminando agotado: recupera lento
+			staminaActual = staminaActual + (velocidadSubidaLenta * deltaTime)
+		end
+	else
+		-- Quieto: recupera a velocidad normal
+		staminaActual = staminaActual + (velocidadSubida * deltaTime)
+	end
+
+	staminaActual = math.clamp(staminaActual, 0, staminaMaxima)
+
+	-- Actualizar barra visual
+	local proporcion = staminaActual / staminaMaxima
+	barraStamina.Size = UDim2.new(proporcion, 0, 1, 0)
+
+	-- Cambiar velocidad según stamina
+	if staminaActual <= 0 and not estaAgotado then
+		humanoid.WalkSpeed = velocidadAgotado
+		estaAgotado = true
+	elseif staminaActual >= 20 and estaAgotado then
+		humanoid.WalkSpeed = velocidadNormal
+		estaAgotado = false
+	end
+end)
+  </code></pre>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>
+    hljs.highlightAll();
+
+    function copiarCodigo() {
+      const texto = document.getElementById("codigo").innerText;
+      navigator.clipboard.writeText(texto).then(() => {
+        const btn = document.querySelector(".copy-btn");
+        btn.textContent = "✅ Copiado";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "📋 Copiar código";
+          btn.classList.remove("copied");
+        }, 2000);
+      });
+    }
+  </script>
+
+</body>
+</html>
